@@ -22,7 +22,7 @@
 
 %% Property list
 %% Comma-separated list of properties
-\clist_new:c { propbox_properties }
+\clist_new:c { propbox_properties_clist }
 
 % inserts #1 into a the sequence with #2's properties
 \cs_new_protected:Npn { \g_propbox_new_box } #1 #2 {
@@ -42,17 +42,29 @@
   \propbox_debug_msg { Declaring~new~set~of~box~properties... }
   \clist_set:Nn \propbox_properties { #1 }
   \propbox_properties_update
-  \propbox_debug_msg { Complete! }
-  \propbox_debug_msg { Here~are~the~new~properties: }
+  \propbox_debug_msg { Complete!~Here~are~the~new~properties: }
   \propbox_if_debug { \clist_show:N \propbox_properties }
 }
 
+\cs_new_protected:cpn { propbox_properties_add_single } #1 {
+  \tl_set:Nn \l_tmpa_tl { l_propbox_box_properties__#1 }
+  \tl_new:c { \l_tmpa_tl }
+  \keys_define:nn { propbox / box_properties } {
+    #1 .tl_set:c = { \l_tmpa_tl }
+  }
+}
 % updates the list of properties a box can have
 \cs_new_protected:cpn { propbox_properties_update } {
   \propbox_debug_msg { Implementing~new~properties~for~boxes... }
-  \keys_define:nn { propbox / box_properties } {
-    
+  
+  \clist_map_inline:Nn \propbox_properties_clist {
+    \propbox_debug_msg { Adding~key~'##1' }
+    \tl_set:Nn \l_tmpa_tl { l_propbox_box_properties__##1 }
+    \keys_define:nn { propbox / box_properties } {
+      ##1 .tl_set:c = { \l_tmpa_tl }
+    }
   }
+  
   \propbox_debug_msg { Done. }
 }
 
