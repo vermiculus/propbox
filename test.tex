@@ -1,0 +1,74 @@
+\documentclass{article}
+\setlength{\parindent}{0pt}
+
+\makeatletter
+%%% Begin package propbox
+% (defun do-l3-space () (interactive) (forward-word) (delete-char 1) (insert "~"))
+% (local-set-key (kbd "C-c 3") 'do-l3-space)
+% (local-set-key (kbd "C-c 3") (lambda () (interactive) (local-set-key (kbd "3") 'do-l3-space) (local-set-key (kbd "C-c 3") (lambda () (interactive) (local-set-key (kbd "3") 'self-insert-command)))))
+% (local-set-key (kbd "r") (lambda () (interactive) (revert-buffer t t t)))
+\RequirePackage{xparse}
+\RequirePackage{expl3}
+\ExplSyntaxOn
+
+\def\propboxdebugmodeon { \def\if_propbox_debug { \iftrue } }
+\def\propboxdebugmodeoff { \def\if_propbox_debug { \iffalse } }
+\def\propbox_if_debug #1 { \if_propbox_debug #1 \fi }
+\def\propbox_debug_msg #1 { \propbox_if_debug { \typeout{#1} } }
+
+%% box collection
+%% holds a list of tokens that save boxes
+\seq_new:c { propbox_boxes_seq }
+
+%% Property list
+%% Comma-separated list of properties
+\clist_new:c { propbox_properties }
+
+% inserts #1 into a the sequence with #2's properties
+\cs_new_protected:Npn { \g_propbox_new_box } #1 #2 {
+  % creates a new save box of the name `propbox_boxnames_N' where N is
+  % the current number of items in the collection---0--\infty.
+  \tl_set:Nn \l_tmpa_tl { propbox_boxnames_\seq_count:N \propbox_boxes_seq }
+  \newsavebox { \use:c { \l_tmpa_tl } }
+  \savebox { \use:c { \l_tmpa_tl } } {
+    \begin{minipage}{\linewidth}
+      #2
+    \end{minipage}
+  }
+  \seq_push:Nv { \propbox_boxes_seq } { \use:c { \l_tmpa_tl } }
+}
+
+\NewDocumentCommand{\DeclareBoxProperty}{m}{
+  \propbox_debug_msg { Declaring~new~set~of~box~properties... }
+  \clist_set:Nn \propbox_properties { #1 }
+  \propbox_properties_update
+  \propbox_debug_msg { Complete! }
+  \propbox_debug_msg { Here~are~the~new~properties: }
+  \propbox_if_debug { \clist_show:N \propbox_properties }
+}
+
+% updates the list of properties a box can have
+\cs_new_protected:cpn { propbox_properties_update } {
+  \propbox_debug_msg { Implementing~new~properties~for~boxes... }
+  \keys_define:nn { propbox / box_properties } {
+    
+  }
+  \propbox_debug_msg { Done. }
+}
+
+
+\ExplSyntaxOff
+\propboxdebugmodeon
+\DeclareBoxProperty{id,difficulty}
+%%% End package
+\makeatother
+
+\propboxdebugmodeon
+\begin{document}
+\DeclareBoxProperty{hello,goodbye}
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
