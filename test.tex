@@ -40,23 +40,16 @@
 
 \NewDocumentCommand{\DeclareBoxProperty}{m}{
   \propbox_debug_msg { Declaring~new~set~of~box~properties... }
-  \clist_set:Nn \propbox_properties { #1 }
+  \clist_set:Nn \propbox_properties_clist { #1 }
   \propbox_properties_update
   \propbox_debug_msg { Complete!~Here~are~the~new~properties: }
-  \propbox_if_debug { \clist_show:N \propbox_properties }
+  \propbox_if_debug { \clist_show:N \propbox_properties_clist }
 }
 
-\cs_new_protected:cpn { propbox_properties_add_single } #1 {
-  \tl_set:Nn \l_tmpa_tl { l_propbox_box_properties__#1 }
-  \tl_new:c { \l_tmpa_tl }
-  \keys_define:nn { propbox / box_properties } {
-    #1 .tl_set:c = { \l_tmpa_tl }
-  }
-}
 % updates the list of properties a box can have
 \cs_new_protected:cpn { propbox_properties_update } {
   \propbox_debug_msg { Implementing~new~properties~for~boxes... }
-  
+  \clist_show:N \propbox_properties_clist
   \clist_map_inline:Nn \propbox_properties_clist {
     \propbox_debug_msg { Adding~key~'##1' }
     \tl_set:Nn \l_tmpa_tl { l_propbox_box_properties__##1 }
@@ -71,7 +64,6 @@
 
 \ExplSyntaxOff
 \propboxdebugmodeon
-\DeclareBoxProperty{id,difficulty}
 %%% End package
 \makeatother
 
