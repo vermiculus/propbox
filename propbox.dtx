@@ -78,45 +78,23 @@
 %   Removes \emph{all} keys from the property list.
 % \end{function}
 
-% \section{Internal functions}
-% \subsection{Debugging}
-
-% \begin{variable}{\__propbox_debug_mode_bool}
-%   Turns on\slash off debugging mode.
-%   This controls almost all log output, and will certainly clutter your log file if set.
-%   When set, \pkg{propbox} will show the contents of internal sequences and keys throughout the compile.
-%   It is probably hard to follow, so the usefulness of macros dependendent on this remains dubious.
-% \end{variable}
-
-% \begin{function}[updated = 2013/08/11]{\propbox_debug_msg:n}
-%   \begin{syntax}
-%     \cs{propbox_debug_msg:n} \Arg{message}
-%   \end{syntax}
-%   Types out a message to the console if debug-mode is on.
-%   This is often used to check the values of variables during development.
-% \end{function}
-
 % \end{documentation}
-%
+
+
+
+
 % \begin{implementation}
 %
 % \section{\pkg{propbox} implementation}
-%
-% ^^A\TestFiles{m3seq002,m3seq003}
-%
+
 %    \begin{macrocode}
 %<*initex|package>
 %    \end{macrocode}
-%
+
 %    \begin{macrocode}
 %<@@=propbox>
 %    \end{macrocode}
-%
-% Our story begins with
-%   \textsf{xparse}\footnote{\texttt{texdoc xparse}} and
-%   \textsf{expl3},\footnote{\texttt{texdoc interface3}}
-%   two fantastic packages that make the whole \LaTeX3 world happy.
-%
+
 %    \begin{macrocode}
 %<*package>
 \ProvidesExplPackage
@@ -124,9 +102,27 @@
 \__expl_package_check:
 %</package>
 %    \end{macrocode}
+
+%
+%\subsection{Debugging}
+
+% \begin{variable}{\@@_debug_mode_bool}
+%   This controls almost all log output, and will certainly clutter your log file if set.
+%   When set, \pkg{propbox} will show the contents of internal sequences and keys throughout the compile.
+%   It is probably hard to follow, so the usefulness of macros dependendent on this remains dubious.
+%    \begin{macrocode}
+\bool_new:N \@@_debug_mode_bool
+%    \end{macrocode}
+% \end{variable}
+
 % \subsection{Boxes}
 % \begin{variable}{\@@_boxes_seq}
-%   
+%   Stores all of the boxes by name.
+%   Remember that \cs{newsavebox} needs two parameters; it needs a single \meta{cs name} and its contents.
+%   It is this \meta{cs name} that we are storing into this sequence.
+%    \begin{macrocode}
+\seq_new:N \@@_boxes_seq
+%    \end{macrocode}
 % \end{variable}
 % \subsection{Properties}
 
@@ -135,7 +131,7 @@
 %   Thus, it is a bona-fide \pkg{l3keys} specification.
 %   Since each property is \emph{supposed} to be a rather simple identifier, a comma-separated list seemed appropriate to store this set.
 %    \begin{macrocode}
-\clist_new:c { propbox_properties_clist }
+\clist_new:N \@@_properties_clist
 %    \end{macrocode}
 % \end{variable}
 
