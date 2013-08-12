@@ -127,34 +127,26 @@
 % \subsection{Properties}
 
 % \begin{variable}{\@@_properties_prop}
-%   This list contains all of the properties that are used for boxes, along with their default values.
+%   This list contains all of the properties that are used for boxes along with their default values.
 %    \begin{macrocode}
 \prop_new:N \@@_properties_prop
 %    \end{macrocode}
 % \end{variable}
 
-
-% \begin{macro}{\@@_property_parse}
-%   \begin{syntax}
-%     \cs{@@_property_parse} \Arg{key}=\Arg{value}
-%   \end{syntax}
-%   Parses a |key=value| token list into |key| and |token|, storing them into \cs{l_tmpa_tl} and \cs{l_tmpb_tl} respectively.
+% \begin{macro}[updated = 2013/08/12]{\@@_new_box_aux:w}
+%   This simple function takes a |key=value| token list and separates it into \meta{key} and \meta{value}.
 %    \begin{macrocode}
-\def\propbox_property_parse#1=#2{
-  \tl_set:Nn \l_tmpa_tl { #1 }
-  \tl_set:Nn \l_tmpb_tl { #2 }
-}
+\def\@@_new_box_aux:w #1=#2
 %    \end{macrocode}
 % \end{macro}
 
-
-% \begin{macro}[updated = 2013/08/11]{\propbox_new_box:nn}
+% \begin{macro}[updated = 2013/08/11]{\@@_new_box:nn}
 %   When creating a new box, care must be taken so that the new box and its properties are somehow associated with each other.
 %   This function does so by generating a name for the box (whose content is given as |#1|) and then
 %     using this generated name (say, \cs{gn}) to store the property list, |#2|, as a token list in \cs{gn_properties}.
 %   Thus, when retrieving the properties for a box, one only needs to append |_properties| to the control sequence to retrive that box's properties.
 %    \begin{macrocode}
-\cs_new_protected:Npn { \g_propbox_new_box } #1 #2
+\cs_new_protected:Npn { \@@_new_box:nn } #1 #2
  {
 %    \end{macrocode}
 % Store the generated name into a local temporary token list.
@@ -162,10 +154,21 @@
 %    \begin{macrocode}
   \tl_set:Nn \l_tmpa_tl { propbox_box_number_\seq_count:N \@@_boxes_seq }
 %    \end{macrocode}
-% Store the properties for this box in its own token list.
+% Store the properties for this box in its own property list.
 % This way, the keys can be set easily and simply to determine whether or not to select the box.
+% To get the properties from a token list, though, a few steps have to be taken:
+% \begin{enumerate}
+% \item Receive the token list as |#1|
+% \item Construct a temporary clist from |#1|
+% \item Map the adding function \cs{prop_put:Nnn} onto the clist
+% \end{enumerate}
 %    \begin{macrocode}
-  \tl_new:cn { \l_tmpa_tl _properties } { #1 }
+  \prop_new:cn { \l_tmpa_tl _properties }
+  \clist_set:Nn \l_tmpa_clist { #1 }
+  \clist_map_inline:Nn \l_tmpa_clist
+   {
+    \prop_put:Nnn \@@_properties_prop { ##1 } { ##2 }
+   }
 %    \end{macrocode}
 % Create a new save box of the name \cs{propbox_box_number_N}
 % where $N$ is the current number of items in the collection.
