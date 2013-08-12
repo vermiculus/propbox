@@ -29,6 +29,12 @@
   % creates a new save box of the name `propbox_boxnames_N' where N is
   % the current number of items in the collection---0--\infty.
   \tl_set:Nn \l_tmpa_tl { propbox_boxnames_\seq_count:N \propbox_boxes_seq }
+  % Store the properties for this box in its own *_properties token
+  % list.  This way, the keys can be set easily and simply to
+  % determine whether or not to select the box.
+  \tl_new:cn { \l_tmpa_tl _properties } { #2 }
+
+  % 
   \newsavebox { \use:c { \l_tmpa_tl } }
   \savebox { \use:c { \l_tmpa_tl } } {
     \begin{minipage}{\linewidth}
