@@ -106,47 +106,40 @@
 %
 %\subsection{Debugging}
 
-% \begin{variable}{\@@_debug_mode_bool}
+% \begin{variable}{\g@@_debug_mode_bool}
 %   This controls almost all log output, and will certainly clutter your log file if set.
 %   When set, \pkg{propbox} will show the contents of internal sequences and keys throughout the compile.
 %   It is probably hard to follow, so the usefulness of macros dependendent on this remains dubious.
 %    \begin{macrocode}
-\bool_new:N \@@_debug_mode_bool
+\bool_new:N \g@@_debug_mode_bool
 %    \end{macrocode}
 % \end{variable}
 
 % \subsection{Boxes}
-% \begin{variable}{\@@_boxes_seq}
+% \begin{variable}{\g@@_boxes_seq}
 %   Stores all of the boxes by name.
 %   Remember that \cs{newsavebox} needs two parameters; it needs a single \meta{cs name} and its contents.
 %   It is this \meta{cs name} that we are storing into this sequence.
 %    \begin{macrocode}
-\seq_new:N \@@_boxes_seq
+\seq_new:N \g@@_boxes_seq
 %    \end{macrocode}
 % \end{variable}
 % \subsection{Properties}
 
-% \begin{variable}{\@@_properties_prop}
+% \begin{variable}{\g@@_properties_tl}
 %   This list contains all of the properties that are used for boxes along with their default values.
 %    \begin{macrocode}
-\prop_new:N \@@_properties_prop
+\tl_new:N \g@@_properties_tl
 %    \end{macrocode}
 % \end{variable}
 
-% \begin{macro}[updated = 2013/08/12]{\@@_new_box_aux:w}
-%   This simple function takes a |key=value| token list and separates it into \meta{key} and \meta{value}.
-%    \begin{macrocode}
-\def\@@_new_box_aux:w #1=#2
-%    \end{macrocode}
-% \end{macro}
-
-% \begin{macro}[updated = 2013/08/11]{\@@_new_box:nn}
+% \begin{macro}[updated = 2013/08/11]{\g@@_new_box:nn}
 %   When creating a new box, care must be taken so that the new box and its properties are somehow associated with each other.
 %   This function does so by generating a name for the box (whose content is given as |#1|) and then
 %     using this generated name (say, \cs{gn}) to store the property list, |#2|, as a token list in \cs{gn_properties}.
 %   Thus, when retrieving the properties for a box, one only needs to append |_properties| to the control sequence to retrive that box's properties.
 %    \begin{macrocode}
-\cs_new_protected:Npn { \@@_new_box:nn } #1 #2
+\cs_new_protected:Npn { \g@@_new_box:nn } #1 #2
  {
 %    \end{macrocode}
 % Store the generated name into a local temporary token list.
@@ -156,15 +149,10 @@
 %    \end{macrocode}
 % Store the properties for this box in its own property list.
 % This way, the keys can be set easily and simply to determine whether or not to select the box.
-% To get the properties from a token list, though, a few steps have to be taken:
-% \begin{enumerate}
-% \item Receive the token list as |#1|
-% \item Construct a temporary clist from |#1|
-% \item Map the adding function \cs{prop_put:Nnn} onto the clist
-% \end{enumerate}
+% The properties are stored as a token list to be set with \cs{keys_set:Nn} when the time comes.
 %    \begin{macrocode}
-  \prop_new:cn { \l_tmpa_tl _properties }
-  \clist_set:Nn \l_tmpa_clist { #1 }
+  \tl_new:cn { g_ \l_tmpa_tl _properties }
+  \tl_set:Nn \l_tmpa_tl { #1 }
   \clist_map_inline:Nn \l_tmpa_clist
    {
     \prop_put:Nnn \@@_properties_prop { ##1 } { ##2 }
