@@ -21,11 +21,14 @@
 \end{document}
 %</driver>
 % \fi
+% \def\fileversion{0}
+% \def\filedate{2013\slash08\slash13}
+% \def\releasedate{\meta{not released}}
 %
 % \title{^^A
 %   The \pkg{propbox} package\\ Boxes with Properties^^A
-%   \thanks{This file describes v\ExplFileVersion,
-%      last revised \ExplFileDate.}^^A
+%   \thanks{This file describes v0,
+%      last revised \filedate.}^^A
 % }
 %
 % \author{^^A
@@ -37,7 +40,7 @@
 %    }^^A
 % }
 %
-% \date{Released \ExplFileDate}
+% \date{Released \releasedate}
 %
 % \maketitle
 %
@@ -128,6 +131,8 @@
 
 % \begin{variable}{\g@@_properties_tl}
 %   This list contains all of the properties that are used for boxes along with their default values.
+%   The expected value of this variable is \emph{at all times expected} to be a valid \pkg{l3keys} specification.
+%   It should only be altered by \hyperref[doc/function//DeclareBoxProperties]{\cs{DeclareBoxProperties}} and friends.
 %    \begin{macrocode}
 \tl_new:N \g@@_properties_tl
 %    \end{macrocode}
@@ -136,20 +141,20 @@
 % \begin{macro}[updated = 2013/08/11]{\g@@_new_box:nn}
 %   When creating a new box, care must be taken so that the new box and its properties are somehow associated with each other.
 %   This function does so by generating a name for the box (whose content is given as |#1|) and then
-%     using this generated name (say, \cs{gn}) to store the property list, |#2|, as a token list in \cs{gn_properties}.
-%   Thus, when retrieving the properties for a box, one only needs to append |_properties| to the control sequence to retrive that box's properties.
+%     using this generated name (say, \cs{gn}) for the box handle (as \cs{gn_box}) and property list, |#2|, as \cs{gn_prop} (using \pkg{l3prop}).
+%   Thus, when retrieving the properties for a box, one only needs to append |_prop| to the control sequence to retrive that box's properties.
 %    \begin{macrocode}
 \cs_new_protected:Npn { \g@@_new_box:nn } #1 #2
  {
 %    \end{macrocode}
-% Store the generated name into a local temporary token list.
-% (It gets very tedious, not to mention inefficient, to type out all the time.)
+%   Store the generated name into a local temporary token list.
+%   (It gets very tedious, not to mention inefficient (because of \cs{seq_count:N}), to type out all the time.)
 %    \begin{macrocode}
-  \tl_set:Nn \l_tmpa_tl { propbox_box_number_\seq_count:N \@@_boxes_seq }
+  \tl_set:Nn \l_tmpa_tl { propbox_box_number_  \seq_count:N \@@_boxes_seq  }
 %    \end{macrocode}
-% Store the properties for this box in its own property list.
-% This way, the keys can be set easily and simply to determine whether or not to select the box.
-% The properties are stored as a token list to be set with \cs{keys_set:Nn} when the time comes.
+%   Store the properties for this box in its own property list.
+%   This way, the keys can be set easily and simply to determine whether or not to select the box.
+%   The properties are stored as a property list that is checked with \cs{prop_get:NnN} during the filter stage.
 %    \begin{macrocode}
   \tl_new:cn { g_ \l_tmpa_tl _properties }
   \tl_set:Nn \l_tmpa_tl { #1 }
@@ -158,23 +163,27 @@
     \prop_put:Nnn \@@_properties_prop { ##1 } { ##2 }
    }
 %    \end{macrocode}
-% Create a new save box of the name \cs{propbox_box_number_N}
-% where $N$ is the current number of items in the collection.
-% ($N \in \left\{0\right\} \cup \mathbf{N}$.)
-% The |minipage| environment is used here to force page-wise sequential output only;
-%   this package grew out of a question on the \TeX~Stack~Exchange site, and this seemed appropriate at the time.
+%   Now the moment we've all been waiting for.
+%   Create a new save box of the name \cs{propbox_box_number_$N$}
+%     where $N$ is the current number of items in the collection.
+%   ($N \in \left\{0\right\} \cup \mathbf{N}$.)
+%   The |minipage| environment is used here to force page-wise sequential output only.^^A
+%     \footnote{This package grew out of a question on the \TeX~Stack~Exchange site, and this seemed appropriate at the time.}
 %    \begin{macrocode}
-  \newsavebox { \use:c { \l_tmpa_tl } }
-  \savebox { \use:c { \l_tmpa_tl } } {
+  \newsavebox { \l_tmpa_tl _box }
+  \savebox { \l_tmpa_tl _box } {
     \begin{minipage}{\linewidth}
       #2
     \end{minipage}
   }
 %    \end{macrocode}
-% Put the handle for the box into the collection of boxes.
+%   After the box is saved, put its handle into the collection of boxes.
+%   (Remember, the name of this handle is stored in \cs{l_tmpa_tl},
+%     and the |v| argspec constructs a cs~name from the expanded value of \cs{l_tmpa_tl},
+%     which holds the stem of our name.
 %    \begin{macrocode}
-  \seq_push:Nv { \@@_boxes_seq }
-               { \use:c { \l_tmpa_tl } }
+  \seq_push:Nv \@@_boxes_seq
+               { \l_tmpa_tl _box }
 %    \end{macrocode}
 %    \begin{macrocode}
  }
@@ -192,19 +201,6 @@
 \bool_new:c { propbox_debug_mode_bool }
 %    \end{macrocode}
 % \end{variable}
-
-
-% \begin{macro}{\propbox_debug_msg:n}
-%   If \cs{propbox_debug_mode} is set, then \cs{typeout} the argument, |#1|.
-%    \begin{macrocode}
-\cs_new:Npn \propbox_debug_msg:n #1 {
-  \bool_if:NTF \@@_debug_mode_bool
-               { \typeout{#1} }
-               { } }
-%    \end{macrocode}
-% \end{macro}
-
-
 
 
 %    \begin{macrocode}
